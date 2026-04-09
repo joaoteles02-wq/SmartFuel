@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Smart Fuel Master V6</title>
+    <title>Smart Fuel Sport Master V7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,159 +16,166 @@
             --bg: #000; 
             --panel: linear-gradient(145deg, #1a1a1a, #000); 
             --text: #ffffff;
-            --glass: rgba(255, 255, 255, 0.05);
             --nav-bg: rgba(10, 10, 10, 0.7);
         }
         
         body.light-mode { 
-            --bg: #f8fafc; 
-            --panel: linear-gradient(145deg, #ffffff, #e2e8f0); 
+            --bg: #f1f5f9; 
+            --panel: linear-gradient(145deg, #ffffff, #cbd5e1); 
             --text: #0f172a; 
-            --neon: #0284c7; 
-            --glass: rgba(0, 0, 0, 0.05);
+            --neon: #0ea5e9; 
             --nav-bg: rgba(255, 255, 255, 0.7);
         }
 
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; transition: 0.4s; }
         
-        /* Estilos de Vidro */
-        .panel-sport { background: var(--panel); border: 1px solid rgba(128, 128, 128, 0.1); border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .lcd-display { background: #050505; border-radius: 12px; box-shadow: inset 0 0 20px #000; border: 1px solid #222; }
-        body.light-mode .lcd-display { background: #fff; border-color: #cbd5e1; box-shadow: inset 0 0 10px #e2e8f0; }
-        
-        /* Tipografia */
-        .digital-glow { font-family: 'Digital Numbers', sans-serif; color: var(--neon); text-shadow: 0 0 15px var(--neon); }
-        body.light-mode .digital-glow { text-shadow: none; color: var(--text); }
-        .main-text { color: var(--text); transition: color 0.4s; }
-
-        /* Gauges */
-        .gauge-fill { fill: none; stroke-width: 14; stroke-linecap: round; stroke-dasharray: 188.5; stroke-dashoffset: 188.5; transition: 1.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        
-        /* Tabs com Scroll */
-        .tab-content { display: none; height: calc(100vh - 190px); overflow-y: auto; padding: 10px; }
-        .active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Navegação Minimalista Glassmorphism */
-        .nav-glass {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            width: 90%; height: 72px;
-            background: var(--nav-bg);
+        /* Glassmorphism Realçado */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 5000; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
-        .nav-btn { color: var(--text); opacity: 0.3; transition: 0.3s; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+
+        .panel-sport { background: var(--panel); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 30px; }
+        
+        .lcd-display { background: #050505; border-radius: 12px; box-shadow: inset 0 0 20px #000; border: 1px solid #222; }
+        body.light-mode .lcd-display { background: #fff; border-color: #94a3b8; box-shadow: inset 0 0 10px #cbd5e1; }
+        
+        .digital-glow { font-family: 'Digital Numbers', sans-serif; color: var(--neon); text-shadow: 0 0 15px var(--neon); }
+        body.light-mode .digital-glow { text-shadow: none; color: #000; }
+
+        .gauge-fill { fill: none; stroke-width: 14; stroke-linecap: round; stroke-dasharray: 188.5; stroke-dashoffset: 188.5; transition: 1.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
+        
+        .tab-content { display: none; height: calc(100vh - 190px); overflow-y: auto; padding: 10px; }
+        .active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Navegação Minimalista */
+        .nav-glass {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            width: 90%; height: 72px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 5000;
+        }
+        .nav-btn { color: var(--text); opacity: 0.3; transition: 0.3s; }
         .active-nav { opacity: 1 !important; color: var(--neon) !important; transform: scale(1.1); }
         
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 6000; padding: 20px; align-items: center; justify-content: center; overflow-y: auto; }
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 6000; padding: 20px; align-items: center; justify-content: center; overflow-y: auto; }
         .big-input { background: rgba(128,128,128,0.1); border: 2px solid rgba(128,128,128,0.2); border-radius: 15px; padding: 15px; color: var(--text); font-size: 20px; width: 100%; outline: none; }
         .odo-input { background: transparent; border: none; color: var(--neon); font-family: 'Digital Numbers', sans-serif; font-size: 40px; text-align: center; width: 100%; outline: none; }
-        .danger-text { color: #ff3333 !important; }
     </style>
 </head>
 <body class="p-4 flex justify-center">
 
     <div id="boot" class="fixed inset-0 bg-black z-[9000] flex flex-col items-center justify-center">
-        <div class="digital-glow text-2xl animate-pulse">SMART FUEL PRO</div>
+        <div class="digital-glow text-2xl animate-pulse uppercase">Smart Fuel Pro</div>
     </div>
 
     <div class="w-full max-w-sm h-full flex flex-col pt-2">
         <header class="flex justify-between items-center mb-4 px-2">
-            <button onclick="toggleTheme()" class="panel-sport px-3 py-1 text-[10px] font-bold uppercase tracking-widest border-none">🌓 THEME</button>
-            <h1 id="ui-car-display" class="text-xl font-black italic tracking-tighter uppercase main-text">Smart Fuel</h1>
+            <button onclick="toggleTheme()" class="glass-card px-3 py-1 text-[10px] font-bold uppercase tracking-widest border-none">🌓 THEME</button>
+            <h1 id="ui-car-display" class="text-xl font-black italic tracking-tighter uppercase">Smart Fuel</h1>
             <div class="h-1 w-8 bg-cyan-500 rounded-full shadow-[0_0_10px_#00f2ff]"></div>
         </header>
 
         <!-- DASHBOARD -->
         <div id="home" class="tab-content active space-y-4">
             <div class="grid grid-cols-2 gap-4">
+                <!-- Gauge Consumo (Título em Preto) -->
                 <div class="panel-sport p-4 text-center">
-                    <p class="text-[11px] font-black uppercase mb-1 text-cyan-500">Consumo (Km/L)</p>
+                    <div class="bg-cyan-400 rounded-full px-2 py-0.5 mb-3 inline-block">
+                        <p class="text-[10px] font-black uppercase text-black">Consumo (Km/L)</p>
+                    </div>
                     <svg class="w-full h-24" viewBox="0 0 140 80">
                         <path fill="none" stroke="rgba(128,128,128,0.2)" stroke-width="12" d="M 20 70 A 50 50 0 1 1 120 70" />
                         <path id="f-cons" class="gauge-fill stroke-cyan-500" d="M 20 70 A 50 50 0 1 1 120 70" />
                     </svg>
-                    <div class="mt-[-45px]"><span id="v-cons" class="text-3xl font-black italic main-text">--</span></div>
+                    <div class="mt-[-45px]"><span id="v-cons" class="text-3xl font-black italic text-white body-light-text">--</span></div>
                 </div>
+                <!-- Gauge Tanque (Mesmo Azul) -->
                 <div class="panel-sport p-4 text-center">
-                    <p class="text-[11px] font-black uppercase mb-4 opacity-40 main-text">Tanque (L)</p>
+                    <p class="text-[11px] font-black uppercase mb-4 opacity-40">Tanque (L)</p>
                     <svg class="w-full h-24" viewBox="0 0 140 80">
                         <path fill="none" stroke="rgba(128,128,128,0.2)" stroke-width="12" d="M 20 70 A 50 50 0 1 1 120 70" />
-                        <path id="f-tank" class="gauge-fill stroke-cyan-800" d="M 20 70 A 50 50 0 1 1 120 70" />
+                        <path id="f-tank" class="gauge-fill stroke-cyan-500" d="M 20 70 A 50 50 0 1 1 120 70" />
                     </svg>
-                    <div class="mt-[-45px]"><span id="v-tank" class="text-3xl font-black italic main-text">--</span></div>
+                    <div class="mt-[-45px]"><span id="v-tank" class="text-3xl font-black italic">--</span></div>
                 </div>
             </div>
 
+            <!-- Odômetro -->
             <div class="panel-sport p-5 text-center">
-                <p class="text-[11px] font-black opacity-40 uppercase mb-2 main-text">Quilometragem Atual</p>
+                <p class="text-[11px] font-black opacity-40 uppercase mb-2">Quilometragem Total</p>
                 <div class="lcd-display py-2"><input type="number" id="v-odo" class="odo-input" inputmode="decimal" oninput="recalcHome()"></div>
             </div>
 
+            <!-- Cards Detalhados (Glassmorphism + Valor Gasto Preto) -->
             <div class="grid grid-cols-2 gap-4">
-                <div class="panel-sport p-4 lcd-display border-none text-center bg-cyan-900/10">
-                    <p class="text-[12px] font-black opacity-40 uppercase main-text">Trip Km</p>
-                    <span id="v-dist" class="text-3xl font-black italic main-text">0</span>
+                <div class="glass-card p-4 text-center">
+                    <p class="text-[11px] font-black opacity-50 uppercase mb-1">Trip Km</p>
+                    <span id="v-dist" class="text-3xl font-black italic">0</span>
                 </div>
-                <div class="panel-sport p-4 lcd-display border-none text-center bg-cyan-900/10">
-                    <p class="text-[12px] font-black opacity-40 uppercase main-text">Gasto L</p>
-                    <span id="v-spent" class="text-3xl font-black italic text-cyan-500">0</span>
+                <div class="glass-card p-4 text-center bg-cyan-400">
+                    <p class="text-[11px] font-black text-black opacity-60 uppercase mb-1">Gasto (L)</p>
+                    <span id="v-spent" class="text-3xl font-black italic text-black">0</span>
                 </div>
             </div>
         </div>
 
         <!-- HISTÓRICO (Com Scroll Interno) -->
-        <div id="history" class="tab-content">
-            <div id="hist-list" class="space-y-3 pb-10"></div>
-        </div>
+        <div id="history" class="tab-content"><div id="hist-list" class="space-y-3 pb-10"></div></div>
 
         <!-- GRÁFICO -->
         <div id="charts" class="tab-content">
-            <div class="panel-sport p-4 h-72"><canvas id="mainChart"></canvas></div>
+            <div class="panel-sport p-4 h-72 shadow-2xl"><canvas id="mainChart"></canvas></div>
         </div>
 
         <!-- CONFIG -->
         <div id="settings" class="tab-content pt-2 space-y-4">
             <div class="panel-sport p-5 space-y-4">
-                <h3 class="text-md font-black uppercase text-cyan-500 border-b border-cyan-900 pb-2">Gerenciar</h3>
-                <label>Carro Ativo</label>
+                <h3 class="text-md font-black uppercase text-cyan-400 border-b border-white/5 pb-2">Gerenciar Veículos</h3>
+                <label>Selecionar</label>
                 <select id="sel-car" class="big-input" onchange="switchVehicle()"></select>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label>Tanque (L)</label><input type="number" id="set-tank" class="big-input" inputmode="decimal"></div>
                     <div><label>Meta Km/L</label><input type="number" id="set-meta" class="big-input" inputmode="decimal"></div>
                 </div>
-                <label>Novo Veículo</label>
-                <input type="text" id="add-car" class="big-input" placeholder="Ex: Honda Civic">
-                <button onclick="saveNewCar()" class="w-full bg-cyan-600 p-4 rounded-2xl font-black text-white uppercase shadow-lg shadow-cyan-500/20">Sincronizar</button>
+                <label>Cadastrar Novo</label>
+                <input type="text" id="add-car" class="big-input" placeholder="Modelo do Carro">
+                <button onclick="saveNewCar()" class="w-full bg-cyan-600 p-4 rounded-2xl font-black text-white uppercase shadow-lg">Salvar na Nuvem</button>
             </div>
         </div>
 
-        <!-- BARRA FIXA GLASSMORFISM -->
+        <!-- NAV GLASS -->
         <nav class="nav-glass">
             <button onclick="tab('home', this)" class="nav-btn active-nav">
-                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             </button>
             <button onclick="tab('history', this)" class="nav-btn">
-                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
             </button>
             <div onclick="openM()" class="bg-cyan-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg -translate-y-6 border-4 border-black">+</div>
             <button onclick="tab('charts', this)" class="nav-btn">
-                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
             </button>
             <button onclick="tab('settings', this)" class="nav-btn">
-                <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </button>
         </nav>
     </div>
 
-    <!-- MODAL NOVO REGISTRO -->
+    <!-- MODAL -->
     <div id="modal">
         <div class="panel-sport w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-2xl font-black uppercase text-cyan-500 text-center">Abastecimento</h3>
+            <h3 class="text-2xl font-black uppercase text-cyan-400 text-center">Abastecimento</h3>
             <div class="grid grid-cols-2 gap-4">
                 <div><label>Odômetro</label><input type="number" id="i-odo" class="big-input" inputmode="decimal"></div>
                 <div><label>Km Viagem</label><input type="number" id="i-dist" class="big-input" inputmode="decimal"></div>
@@ -181,13 +188,16 @@
                     <option value="Parcial">Parcial</option>
                 </select>
             </div>
-            <div><label>Valor Total R$</label><input type="number" id="i-tot" step="0.01" class="big-input" disabled oninput="calcP()"></div>
-            <div class="lcd-display p-4 text-center"><label>Preço Unitário</label><div id="v-price" class="text-3xl font-black text-cyan-500">R$ 0,00</div></div>
+            <div><label>Total R$</label><input type="number" id="i-tot" step="0.01" class="big-input" disabled oninput="calcP()"></div>
+            <div class="lcd-display p-4 text-center bg-cyan-400">
+                <label class="text-black font-black">Preço Unitário</label>
+                <div id="v-price" class="text-3xl font-black text-black">R$ 0,00</div>
+            </div>
             <label>Posto</label>
             <input type="text" id="i-st" list="postos-list" class="big-input" placeholder="Buscar...">
             <datalist id="postos-list"></datalist>
             <div class="flex gap-4 pt-4">
-                <button onclick="closeM()" class="flex-1 font-bold opacity-50 uppercase main-text">Voltar</button>
+                <button onclick="closeM()" class="flex-1 font-bold opacity-50 uppercase">Sair</button>
                 <button onclick="saveData()" id="btn-save" class="flex-1 bg-cyan-600 p-4 rounded-2xl font-black text-white uppercase">Salvar</button>
             </div>
         </div>
@@ -232,13 +242,12 @@
             const odo = parseFloat(document.getElementById('v-odo').value) || 0;
             const trip = odo - last[3];
             const lastKmL = parseFloat(last[12]) || metaVal;
-            
             const consumed = trip / lastKmL;
             const remaining = tank_cap - consumed;
 
             const vCons = document.getElementById('v-cons');
             vCons.innerText = lastKmL.toFixed(2);
-            vCons.className = lastKmL < metaVal ? "text-3xl font-black italic danger-text" : "text-3xl font-black italic main-text";
+            vCons.className = lastKmL < metaVal ? "text-3xl font-black italic danger-text" : "text-3xl font-black italic";
 
             document.getElementById('v-tank').innerText = Math.max(0, remaining).toFixed(1);
             document.getElementById('v-dist').innerText = trip > 0 ? trip : 0;
@@ -273,11 +282,11 @@
                 const kml = parseFloat(l[12]);
                 const isDanger = kml < metaVal;
                 return `
-                <div class="panel-sport p-5 flex justify-between bg-white/5 border border-white/5 mb-3">
-                    <div><p class="text-lg font-black uppercase italic main-text">${l[9] || 'Posto'}</p><p class="text-xs opacity-50 main-text">${l[1].split('T')[0]}</p></div>
+                <div class="glass-card p-5 flex justify-between border-none mb-3 bg-white/5">
+                    <div><p class="text-lg font-black uppercase italic">${l[9] || 'Posto'}</p><p class="text-xs opacity-50">${l[1].split('T')[0]}</p></div>
                     <div class="text-right">
-                        <p class="text-lg font-bold ${isDanger?'danger-text':'text-cyan-500'}">${kml.toFixed(2)} Km/L</p>
-                        <p class="text-xs font-black opacity-30 uppercase main-text">${l[3]} KM | ${l[8]} L</p>
+                        <p class="text-lg font-bold ${isDanger?'danger-text':'text-cyan-400'}">${kml.toFixed(2)} Km/L</p>
+                        <p class="text-xs font-black opacity-30 uppercase">${l[3]} KM | ${l[8]} L</p>
                     </div>
                 </div>`;
             }).join('');
@@ -304,7 +313,8 @@
             btn.classList.add('active-nav'); 
         }
         function openM() { document.getElementById('modal').style.display = 'flex'; }
-        function closeM() { document.getElementById('modal').style.display = 'none'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function closeM() { closeModal(); }
         window.onload = sync;
     </script>
 </body>
