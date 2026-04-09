@@ -10,230 +10,194 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.cdnfonts.com/css/digital-numbers');
-        :root { --neon: #00f2ff; --neon-p: #bc13fe; --bg: #050505; }
-        body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
-        
-        /* Painel Skeuomorphic Metal/Fibra de Carbono */
-        .panel-master {
-            background: linear-gradient(145deg, #1a1a1a, #000);
-            border: 1px solid #333;
-            box-shadow: inset 0 2px 10px rgba(255,255,255,0.05), 0 20px 40px rgba(0,0,0,0.9);
-            border-radius: 40px;
-        }
-
-        .lcd-screen {
-            background: #080808;
-            border: 2px solid #1a1a1a;
-            box-shadow: inset 0 0 20px #000;
-            border-radius: 15px;
-        }
-
-        .digital-glow {
-            font-family: 'Digital Numbers', sans-serif;
-            color: var(--neon);
-            text-shadow: 0 0 15px var(--neon);
-        }
-
-        /* Gauge Superior Estilo Motorsport */
-        .gauge-svg { width: 100%; height: 110px; }
-        .gauge-bg { fill: none; stroke: #1a1a1a; stroke-width: 12; stroke-linecap: round; }
-        .gauge-fill { 
-            fill: none; stroke-width: 12; stroke-linecap: round; 
-            stroke-dasharray: 188.5; stroke-dashoffset: 188.5; 
-            transition: 2.5s cubic-bezier(0.17, 0.67, 0.12, 1); 
-        }
-
-        /* Tabs e Nav */
-        .tab-content { display: none; height: calc(100vh - 220px); overflow-y: auto; padding-bottom: 20px; }
-        .active { display: block; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .nav-button { transition: 0.3s; filter: grayscale(1); opacity: 0.4; }
-        .nav-button.active-nav { filter: grayscale(0); opacity: 1; transform: scale(1.2); }
-        
-        ::-webkit-scrollbar { width: 0px; }
+        :root { --neon: #00f2ff; --purple: #bc13fe; }
+        body { background: #000; color: white; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; }
+        .panel-sport { background: linear-gradient(145deg, #151515, #000); border: 1px solid #222; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .lcd-display { background: #080808; border-radius: 10px; box-shadow: inset 0 0 15px #000; }
+        .digital-glow { font-family: 'Digital Numbers', sans-serif; color: var(--neon); text-shadow: 0 0 12px var(--neon); }
+        .gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; stroke-dasharray: 188.5; stroke-dashoffset: 188.5; transition: 2.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
+        .tab-content { display: none; height: calc(100vh - 240px); overflow-y: auto; padding-right: 5px; }
+        .active { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-btn { transition: 0.3s; filter: grayscale(1); opacity: 0.3; }
+        .nav-btn.active-nav { filter: grayscale(0); opacity: 1; transform: scale(1.1); }
+        #boot { position: fixed; inset: 0; background: #000; z-index: 5000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
     </style>
 </head>
-<body class="flex justify-center p-4 pt-10">
+<body class="flex justify-center p-4">
 
-    <div id="boot" class="fixed inset-0 bg-black z-[3000] flex flex-col items-center justify-center">
-        <div class="digital-glow text-xl animate-pulse tracking-widest uppercase">Initializing System</div>
-        <div class="w-48 h-1 bg-gray-900 mt-4 overflow-hidden rounded-full">
-            <div class="h-full bg-cyan-500 animate-[loading_2s_ease-in-out_infinite]"></div>
-        </div>
+    <!-- Tela de Carregamento -->
+    <div id="boot">
+        <div class="digital-glow text-lg animate-pulse uppercase tracking-[0.4em]">Checking System</div>
+        <p id="boot-msg" class="text-[10px] text-gray-600 mt-4 uppercase font-bold tracking-widest">Connectig to Cloud...</p>
     </div>
 
-    <div class="w-full max-w-sm h-full flex flex-col">
-        
+    <div class="w-full max-w-sm h-full flex flex-col pt-6">
         <header class="text-center mb-6">
-            <h1 id="car-title" class="text-2xl font-black italic tracking-tighter uppercase text-gray-500">Smart Fuel</h1>
-            <div class="flex justify-center gap-1 mt-1">
-                <div class="h-1 w-8 bg-cyan-500 rounded-full"></div>
-                <div class="h-1 w-2 bg-gray-800 rounded-full"></div>
-            </div>
+            <h1 id="car-title" class="text-2xl font-black italic tracking-tighter uppercase text-gray-400">Smart Fuel Sport</h1>
+            <div id="ui-accent" class="h-1 w-12 bg-cyan-500 mx-auto mt-1 rounded-full"></div>
         </header>
 
-        <!-- DASHBOARD PRINCIPAL -->
+        <!-- DASHBOARD -->
         <div id="home" class="tab-content active space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div class="panel-master p-5 text-center">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Efficiency</p>
-                    <svg class="gauge-svg" viewBox="0 0 140 80">
-                        <path class="gauge-bg" d="M 20 70 A 50 50 0 1 1 120 70" />
-                        <path id="f-cons" class="gauge-fill stroke-cyan-500 shadow-lg" d="M 20 70 A 50 50 0 1 1 120 70" />
+                <div class="panel-sport p-5 text-center">
+                    <p class="text-[11px] font-black text-cyan-400 uppercase mb-4">Efficiency</p>
+                    <svg class="w-full h-20 mx-auto" viewBox="0 0 140 80">
+                        <path fill="none" stroke="#1a1a1a" stroke-width="12" stroke-linecap="round" d="M 20 70 A 50 50 0 1 1 120 70" />
+                        <path id="f-cons" class="gauge-fill stroke-cyan-500" d="M 20 70 A 50 50 0 1 1 120 70" />
                     </svg>
-                    <div class="mt-[-45px]"><span id="v-cons" class="text-2xl font-black italic">--</span><p class="text-[8px] opacity-30 font-bold uppercase">Km/L</p></div>
+                    <div class="mt-[-45px]"><span id="v-cons" class="text-2xl font-black italic">0.0</span><p class="text-[8px] opacity-30 font-bold uppercase">Km/L</p></div>
                 </div>
-
-                <div class="panel-master p-5 text-center">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase mb-4 tracking-widest">Fuel Reserve</p>
-                    <svg class="gauge-svg" viewBox="0 0 140 80">
-                        <path class="gauge-bg" d="M 20 70 A 50 50 0 1 1 120 70" />
+                <div class="panel-sport p-5 text-center">
+                    <p class="text-[11px] font-black text-purple-500 uppercase mb-4">Fuel Level</p>
+                    <svg class="w-full h-20 mx-auto" viewBox="0 0 140 80">
+                        <path fill="none" stroke="#1a1a1a" stroke-width="12" stroke-linecap="round" d="M 20 70 A 50 50 0 1 1 120 70" />
                         <path id="f-tank" class="gauge-fill stroke-purple-600" d="M 20 70 A 50 50 0 1 1 120 70" />
                     </svg>
-                    <div class="mt-[-45px]"><span id="v-tank" class="text-2xl font-black italic">--</span><p class="text-[8px] opacity-30 font-bold uppercase">Litros</p></div>
+                    <div class="mt-[-45px]"><span id="v-tank" class="text-2xl font-black italic">0.0</span><p class="text-[8px] opacity-30 font-bold uppercase">Litros</p></div>
                 </div>
             </div>
 
-            <div class="panel-master p-6 text-center">
-                <p class="text-[10px] font-bold text-cyan-500 uppercase mb-3 tracking-widest">Master Odometer</p>
-                <div class="lcd-screen py-3 px-6 inline-block mb-2 border-cyan-900/30">
+            <div class="panel-sport p-6 text-center">
+                <p class="text-[11px] font-black text-gray-500 uppercase mb-3">Total Odometer</p>
+                <div class="lcd-display py-3 px-6 inline-block border border-white/5">
                     <span id="v-odo" class="digital-glow text-3xl tracking-[4px]">000000</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="panel-master p-4 lcd-screen border-none">
-                    <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Trip Distance</p>
-                    <span id="v-dist" class="text-xl font-black italic">--</span><span class="text-[10px] ml-1 opacity-30">Km</span>
+                <div class="panel-sport p-4 lcd-display border-none">
+                    <p class="text-[10px] font-black text-gray-500 uppercase mb-1">Trip Trip</p>
+                    <span id="v-dist" class="text-xl font-black italic">0</span><span class="text-[10px] ml-1 opacity-20">Km</span>
                 </div>
-                <div class="panel-master p-4 lcd-screen border-none text-purple-400">
-                    <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Spent Fuel</p>
-                    <span id="v-spent" class="text-xl font-black italic">--</span><span class="text-[10px] ml-1 opacity-30">Lts</span>
+                <div class="panel-sport p-4 lcd-display border-none">
+                    <p class="text-[10px] font-black text-gray-500 uppercase mb-1">Fuel Spent</p>
+                    <span id="v-spent" class="text-xl font-black text-purple-400 italic">0</span><span class="text-[10px] ml-1 opacity-20">Lts</span>
                 </div>
             </div>
         </div>
 
         <!-- HISTÓRICO -->
-        <div id="history" class="tab-content space-y-3">
-            <h2 class="text-xl font-black italic uppercase mb-4 tracking-tight border-l-4 border-cyan-500 pl-3">Telemetry Log</h2>
-            <div id="hist-list" class="space-y-2"></div>
+        <div id="history" class="tab-content">
+            <h2 class="text-lg font-black uppercase italic mb-4 border-l-4 border-cyan-500 pl-3">Telemetry Log</h2>
+            <div id="hist-list" class="space-y-3 pb-10"></div>
         </div>
 
         <!-- GRÁFICO -->
         <div id="charts" class="tab-content">
-            <h2 class="text-xl font-black italic uppercase mb-4 tracking-tight border-l-4 border-purple-500 pl-3">Performance</h2>
-            <div class="panel-master p-4 h-64 shadow-2xl">
-                <canvas id="mainChart"></canvas>
-            </div>
+            <h2 class="text-lg font-black uppercase italic mb-4 border-l-4 border-purple-500 pl-3">Performance</h2>
+            <div class="panel-sport p-4 h-64"><canvas id="mainChart"></canvas></div>
         </div>
 
-        <!-- MENU INFERIOR -->
-        <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] h-18 panel-master flex justify-around items-center px-6 z-[2000]">
-            <button onclick="changeTab('home', this)" class="nav-button active-nav text-2xl">🏠</button>
-            <button onclick="changeTab('history', this)" class="nav-button text-2xl">📊</button>
-            <div class="bg-cyan-500 w-14 h-14 rounded-full flex items-center justify-center text-black text-3xl font-bold shadow-[0_0_20px_rgba(6,182,212,0.5)] -translate-y-8">+</div>
-            <button onclick="changeTab('charts', this)" class="nav-button text-2xl">📈</button>
-            <button class="nav-button text-2xl opacity-20">⚙️</button>
+        <!-- MENU -->
+        <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] h-20 panel-sport flex justify-around items-center px-6 z-[2000]">
+            <button onclick="changeTab('home', this)" class="nav-btn active-nav text-2xl">🏠</button>
+            <button onclick="changeTab('history', this)" class="nav-btn text-2xl">📊</button>
+            <div class="bg-cyan-500 w-14 h-14 rounded-full flex items-center justify-center text-black text-3xl font-bold shadow-[0_0_15px_#06b6d4] -translate-y-8">+</div>
+            <button onclick="changeTab('charts', this)" class="nav-btn text-2xl">📈</button>
+            <button class="nav-btn text-2xl opacity-20">⚙️</button>
         </nav>
     </div>
 
     <script>
-        const SCRIPT_URL = "COLE_AQUI_O_SEU_LINK_DO_GOOGLE";
+        // ======= COLOQUE O SEU LINK AQUI =======
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybJAi3Js_FDbIQ_s6Mm6-wI-cNE3krCUEurkDWulhpcOr6ur-EQLepQ5cbGGE9x23SoA/exec";
+        // =======================================
+
         let tank_cap = 53, chart;
 
         async function sync() {
+            const bootMsg = document.getElementById('boot-msg');
             try {
+                bootMsg.innerText = "Fetching data...";
                 const r = await fetch(SCRIPT_URL);
                 const d = await r.json();
-                const logs = d.logs;
-                const config = d.config;
-
+                
+                // Suporta formato novo {logs, config} ou formato antigo [array]
+                const logs = d.logs || d;
+                const config = d.config || {};
+                
                 if (config.car_name) {
                     document.getElementById('car-title').innerText = config.car_name;
                     tank_cap = parseFloat(config.tank_capacity) || 53;
                 }
 
-                // Dados da última e penúltima linha para cálculo Parcial
                 const last = logs[logs.length - 1];
-                const prev = logs[logs.length - 2];
+                const prev = logs[logs.length - 2] || last;
 
-                // Fórmulas conforme solicitado
-                const distTrip = parseFloat(last[4]); 
-                const litersAdded = parseFloat(last[8]);
+                const distTrip = parseFloat(last[4]) || 0; 
+                const litersAdded = parseFloat(last[8]) || 1;
                 const kmL_atual = distTrip / litersAdded;
-                const isFull = last[13].includes("Full");
+                const isFull = last[13] ? last[13].toString().includes("Full") : true;
 
-                let consumed;
-                if(isFull) {
-                    consumed = distTrip / kmL_atual;
-                } else {
-                    const prevKmL = parseFloat(prev[12]) || kmL_atual;
-                    consumed = distTrip / prevKmL;
-                }
+                let consumed = isFull ? (distTrip / kmL_atual) : (distTrip / (parseFloat(prev[12]) || kmL_atual));
+                const remaining = tank_cap - consumed;
 
-                const tanqueRestante = tank_cap - consumed;
-
-                // UI Update
+                // Atualiza UI
                 document.getElementById('v-odo').innerText = last[3].toString().padStart(6, '0');
                 document.getElementById('v-cons').innerText = kmL_atual.toFixed(2);
-                document.getElementById('v-tank').innerText = tanqueRestante.toFixed(1);
-                document.getElementById('v-dist').innerText = last[4];
-                document.getElementById('v-spent').innerText = last[8];
+                document.getElementById('v-tank').innerText = remaining.toFixed(1);
+                document.getElementById('v-dist').innerText = last[4] || "0";
+                document.getElementById('v-spent').innerText = last[8] || "0";
 
                 // Gauges
                 document.getElementById('f-cons').style.strokeDashoffset = 188.5 - (188.5 * Math.min(kmL_atual/15, 1));
-                document.getElementById('f-tank').style.strokeDashoffset = 188.5 - (188.5 * Math.min(tanqueRestante/tank_cap, 1));
+                document.getElementById('f-tank').style.strokeDashoffset = 188.5 - (188.5 * Math.min(remaining/tank_cap, 1));
 
-                // Historico
+                // Histórico
                 const list = document.getElementById('hist-list');
                 list.innerHTML = "";
                 logs.slice().reverse().forEach(l => {
                     list.innerHTML += `
-                        <div class="panel-master p-4 flex justify-between items-center border-r-2 border-cyan-500/30">
-                            <div><p class="font-bold text-sm italic">${l[9]}</p><p class="text-[9px] opacity-30">${l[1].split('T')[0]}</p></div>
-                            <div class="text-right"><p class="font-black text-cyan-400">${parseFloat(l[12]).toFixed(2)}</p><p class="text-[8px] opacity-20">Km/L</p></div>
+                        <div class="panel-sport p-4 flex justify-between items-center bg-zinc-900/20 mb-2">
+                            <div>
+                                <p class="font-black italic text-sm text-white uppercase">${l[9] || 'Posto'}</p>
+                                <p class="text-[10px] text-gray-500 font-bold">${l[1] ? l[1].split('T')[0] : 'Data'}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-bold text-cyan-400">ODO: ${l[3]} Km</p>
+                                <p class="text-[10px] text-purple-400 font-bold">${l[8]} Lts</p>
+                            </div>
                         </div>`;
                 });
 
                 renderChart(logs);
-                document.getElementById('boot').style.display = 'none';
-            } catch (e) { console.error(e); }
+                document.getElementById('boot').style.opacity = '0';
+                setTimeout(() => document.getElementById('boot').style.display = 'none', 500);
+
+            } catch (e) { 
+                console.error(e);
+                bootMsg.innerText = "ERROR: CHECK GOOGLE SCRIPT URL";
+                bootMsg.style.color = "red";
+                // Força saída do boot para mostrar a tela mesmo com erro
+                setTimeout(() => document.getElementById('boot').style.display = 'none', 3000);
+            }
         }
 
         function renderChart(logs) {
             const ctx = document.getElementById('mainChart').getContext('2d');
             if(chart) chart.destroy();
-            const lastData = logs.slice(-10);
+            const lastData = logs.slice(-8);
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: lastData.map(l => l[1].split('T')[0].substring(5)),
+                    labels: lastData.map(l => l[1] ? l[1].split('T')[0].substring(5) : ''),
                     datasets: [{
-                        label: 'Consumo',
-                        data: lastData.map(l => l[12]),
+                        data: lastData.map(l => parseFloat(l[12]) || 0),
                         borderColor: '#06b6d4',
-                        backgroundColor: 'rgba(6, 182, 212, 0.2)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 0
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        fill: true, tension: 0.4, borderWidth: 2, pointRadius: 2
                     }]
                 },
-                options: { 
-                    plugins: { legend: { display: false } }, 
-                    scales: { 
-                        y: { display: false }, 
-                        x: { grid: { display: false }, ticks: { color: '#333' } } 
-                    } 
-                }
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#333' } } } }
             });
         }
 
         function changeTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active-nav'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav'));
             btn.classList.add('active-nav');
         }
 
