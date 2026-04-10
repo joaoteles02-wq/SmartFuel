@@ -5,32 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Smart Fuel Master V9</title>
+    <title>Smart Fuel Master V10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.cdnfonts.com/css/digital-numbers');
-        :root { --neon: #00f2ff; --bg: #000; --text: #ffffff; --nav-bg: rgba(15, 15, 15, 0.3); }
+        :root { --neon: #00f2ff; --bg: #000; --text: #ffffff; --nav-bg: rgba(15, 15, 15, 0.3); --danger: #ff3b30; }
         body.light-mode { --bg: #f1f5f9; --text: #0f172a; --neon: #0ea5e9; --nav-bg: rgba(255, 255, 255, 0.3); }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; transition: 0.4s; }
         
         .panel-sport { background: linear-gradient(145deg, #1a1a1a, #000); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 30px; }
         body.light-mode .panel-sport { background: linear-gradient(145deg, #ffffff, #cbd5e1); }
-
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
         .lcd-display { background: #050505; border-radius: 12px; box-shadow: inset 0 0 20px #000; border: 1px solid #222; }
         body.light-mode .lcd-display { background: #fff; border-color: #94a3b8; box-shadow: inset 0 0 10px #cbd5e1; }
-        
         .digital-glow { font-family: 'Digital Numbers', sans-serif; color: var(--neon); text-shadow: 0 0 15px var(--neon); }
         body.light-mode .digital-glow { text-shadow: none; color: #000; }
 
         .gauge-fill { fill: none; stroke-width: 14; stroke-linecap: round; stroke-dasharray: 188.5; stroke-dashoffset: 188.5; transition: 1.5s cubic-bezier(0.1, 0.7, 0.1, 1); }
         .tab-content { display: none; height: calc(100vh - 190px); overflow-y: auto; padding: 10px; }
         .active { display: block; }
-
+        
         .nav-glass {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            width: 90%; height: 72px; background: var(--nav-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            width: 90%; height: 72px; background: var(--nav-bg); backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 24px;
             display: flex; justify-content: space-around; align-items: center; z-index: 5000;
         }
@@ -40,23 +37,22 @@
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 6000; padding: 20px; align-items: center; justify-content: center; overflow-y: auto; }
         .big-input { background: rgba(128,128,128,0.1); border: 2px solid rgba(128,128,128,0.2); border-radius: 15px; padding: 15px; color: var(--text); font-size: 20px; width: 100%; outline: none; font-weight: bold; }
         .odo-input { background: transparent; border: none; color: var(--neon); font-family: 'Digital Numbers', sans-serif; font-size: 40px; text-align: center; width: 100%; outline: none; }
-        
-        .text-danger { color: #ff3b30 !important; } /* Cor de erro/meta não atingida */
+        .alert-pulse { animation: pulseRed 1.5s infinite; color: var(--danger); font-weight: 900; }
+        @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         label { font-size: 11px; font-weight: 900; color: #777; text-transform: uppercase; margin-bottom: 4px; display: block; }
     </style>
 </head>
 <body class="p-4 flex justify-center">
 
-    <div id="boot" class="fixed inset-0 bg-black z-[9000] flex flex-col items-center justify-center text-center">
-        <div class="digital-glow text-2xl animate-pulse uppercase">SMART FUEL PRO</div>
-        <p class="text-[10px] text-gray-500 mt-2 tracking-[0.3em]">CARREGANDO TELEMETRIA...</p>
+    <div id="boot" class="fixed inset-0 bg-black z-[9000] flex flex-col items-center justify-center">
+        <div class="digital-glow text-2xl animate-pulse">SMART FUEL V10</div>
     </div>
 
     <div class="w-full max-w-sm h-full flex flex-col pt-2">
         <header class="flex justify-between items-center mb-4 px-2">
-            <button onclick="toggleTheme()" class="glass-card px-3 py-1 text-[10px] font-bold uppercase tracking-widest border-none">🌓 MODO</button>
+            <button onclick="toggleTheme()" class="panel-sport px-3 py-1 text-[10px] font-bold uppercase border-none">🌓 MODO</button>
+            <div id="oil-alert" class="hidden alert-pulse text-[10px] uppercase">⚠️ Trocar Óleo</div>
             <h1 id="ui-car-display" class="text-xl font-black italic tracking-tighter uppercase">Smart Fuel</h1>
-            <div class="h-1 w-8 bg-cyan-500 rounded-full shadow-[0_0_10px_#00f2ff]"></div>
         </header>
 
         <!-- DASHBOARD -->
@@ -81,14 +77,16 @@
             </div>
 
             <div class="panel-sport p-5 text-center">
-                <p class="text-[11px] font-black opacity-40 uppercase mb-2">Quilometragem Total</p>
+                <p class="text-[11px] font-black opacity-40 uppercase mb-2">Quilometragem Atual</p>
                 <div class="lcd-display py-2"><input type="number" id="v-odo" class="odo-input" inputmode="decimal" oninput="recalcHome()"></div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="glass-card p-4 text-center"><p class="text-[11px] font-black opacity-50 uppercase mb-1">Trip Km</p><span id="v-dist" class="text-3xl font-black italic">0</span></div>
-                <!-- Card Gasto L (Fundo Branco, Texto Preto) -->
-                <div class="p-4 text-center bg-white rounded-[24px] shadow-lg">
+                <div class="panel-sport p-4 lcd-display border-none text-center">
+                    <p class="text-[11px] font-black opacity-50 uppercase mb-1 text-cyan-400">Próx. Óleo</p>
+                    <span id="v-oil-target" class="text-2xl font-black italic">0</span>
+                </div>
+                <div class="p-4 text-center bg-white rounded-[24px]">
                     <p class="text-[11px] font-black text-black opacity-60 uppercase mb-1">Gasto (L)</p>
                     <span id="v-spent" class="text-3xl font-black italic text-black">0</span>
                 </div>
@@ -96,65 +94,60 @@
         </div>
 
         <!-- HISTÓRICO -->
-        <div id="history" class="tab-content"><div id="hist-list" class="space-y-3 pb-20"></div></div>
+        <div id="history" class="tab-content"><div id="hist-list" class="space-y-3 pb-10"></div></div>
 
         <!-- GRÁFICO -->
-        <div id="charts" class="tab-content"><div class="panel-sport p-4 h-72 shadow-2xl"><canvas id="mainChart"></canvas></div></div>
+        <div id="charts" class="tab-content"><div class="panel-sport p-4 h-72"><canvas id="mainChart"></canvas></div></div>
 
         <!-- CONFIG -->
         <div id="settings" class="tab-content pt-2 space-y-4">
             <div class="panel-sport p-5 space-y-4">
-                <h3 class="text-md font-black uppercase text-cyan-400 border-b border-white/5 pb-2">Gerenciar Veículos</h3>
-                <label>Selecionar</label>
-                <select id="sel-car" class="big-input" onchange="switchVehicle()"></select>
+                <h3 class="text-md font-black uppercase text-cyan-400 border-b border-white/5 pb-2">Veículos</h3>
+                <label>Selecionar</label><select id="sel-car" class="big-input" onchange="switchVehicle()"></select>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label>Tanque (L)</label><input type="number" id="set-tank" class="big-input" inputmode="decimal"></div>
                     <div><label>Meta Km/L</label><input type="number" id="set-meta" class="big-input" inputmode="decimal"></div>
                 </div>
-                <label>Cadastrar Novo</label>
-                <input type="text" id="add-car" class="big-input" placeholder="Modelo do Carro">
-                <button onclick="saveNewCar()" class="w-full bg-cyan-600 p-4 rounded-2xl font-black text-white uppercase shadow-lg">Salvar na Nuvem</button>
+                <label>Novo Veículo</label><input type="text" id="add-car" class="big-input" placeholder="Modelo">
+                <button onclick="saveNewCar()" class="w-full bg-cyan-600 p-4 rounded-2xl font-black text-white uppercase shadow-lg">Sincronizar</button>
             </div>
         </div>
 
         <!-- NAV -->
         <nav class="nav-glass">
-            <button onclick="tab('home', this)" class="nav-btn active-nav">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-            </button>
-            <button onclick="tab('history', this)" class="nav-btn">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-            </button>
+            <button onclick="tab('home', this)" class="nav-btn active-nav"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></button>
+            <button onclick="tab('history', this)" class="nav-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg></button>
             <div onclick="openM()" class="bg-cyan-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg -translate-y-6 border-4 border-black">+</div>
-            <button onclick="tab('charts', this)" class="nav-btn">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
-            </button>
-            <button onclick="tab('settings', this)" class="nav-btn">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-            </button>
+            <button onclick="tab('charts', this)" class="nav-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg></button>
+            <button onclick="tab('settings', this)" class="nav-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
         </nav>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL NOVO ABASTECIMENTO -->
     <div id="modal">
         <div class="panel-sport w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-2xl font-black uppercase text-cyan-400 text-center">Abastecimento</h3>
-            <div><label>Data</label><input type="date" id="i-date" class="big-input"></div>
+            <h3 class="text-2xl font-black uppercase text-cyan-400 text-center">Novo Registro</h3>
+            
+            <div><label>Data do Abastecimento</label><input type="date" id="i-date" class="big-input"></div>
+
             <div class="grid grid-cols-2 gap-4">
-                <div><label>Odômetro</label><input type="number" id="i-odo" class="big-input" inputmode="decimal"></div>
-                <div><label>Km Viagem</label><input type="number" id="i-dist" class="big-input" inputmode="decimal"></div>
+                <div><label>Odômetro Atual</label><input type="number" id="i-odo" class="big-input" inputmode="decimal"></div>
+                <div><label>Troca de Óleo (Km)</label><input type="number" id="i-oil" class="big-input" inputmode="decimal" placeholder="Meta Km"></div>
             </div>
-            <div><label>Litros</label><input type="number" id="i-lit" step="0.01" class="big-input" inputmode="decimal" oninput="calcP()"></div>
-            <div><label>Posto</label><input type="text" id="i-st" list="postos-list" class="big-input" placeholder="Posto..."><datalist id="postos-list"></datalist></div>
-            <div><label>Tanque</label>
+            
+            <div><label>Litros Abastecidos</label><input type="number" id="i-lit" step="0.01" class="big-input" inputmode="decimal" oninput="calcP()"></div>
+            <div><label>Posto</label><input type="text" id="i-st" list="postos-list" class="big-input" placeholder="Buscar posto..."><datalist id="postos-list"></datalist></div>
+            
+            <div><label>Status do Tanque</label>
                 <select id="i-tank-lvl" class="big-input" onchange="document.getElementById('i-tot').disabled=false">
-                    <option value="">Selecione...</option><option value="Full Tank - refresh">Cheio</option><option value="Parcial">Parcial</option>
+                    <option value="">Selecione...</option><option value="Full Tank - refresh">Tanque Cheio</option><option value="Parcial">Parcial</option>
                 </select>
             </div>
-            <div><label>Total R$</label><input type="number" id="i-tot" step="0.01" class="big-input" disabled oninput="calcP()"></div>
-            <div class="lcd-display p-4 text-center bg-cyan-400"><label class="text-black font-black">Preço/Litro</label><div id="v-price" class="text-3xl font-black text-black">R$ 0,00</div></div>
+            <div><label>Valor Total R$</label><input type="number" id="i-tot" step="0.01" class="big-input" disabled oninput="calcP()" inputmode="decimal"></div>
+            <div class="lcd-display p-4 text-center bg-cyan-400"><label class="text-black font-black">Preço Unitário</label><div id="v-price" class="text-3xl font-black text-black">R$ 0,00</div></div>
+            
             <div class="flex gap-4 pt-4">
-                <button onclick="closeM()" class="flex-1 font-bold opacity-50 uppercase">Sair</button>
+                <button onclick="closeM()" class="flex-1 font-bold opacity-50 uppercase">Cancelar</button>
                 <button onclick="saveData()" id="btn-save" class="flex-1 bg-cyan-600 p-4 rounded-2xl font-black text-white uppercase">Salvar</button>
             </div>
         </div>
@@ -162,7 +155,7 @@
 
     <script>
         const URL = "https://script.google.com/macros/s/AKfycbx4gPoYfO0y3vUW47XseKMifOR9QTDQVMziYa-RB0TKWxiGI8WuaAmeh36JG8_eViJMJA/exec";
-        let tank_cap = 53, chart, allLogs = [], activeCar = "Hyundai I-30", metaVal = 8.0;
+        let tank_cap = 53, chart, allLogs = [], activeCar = "Hyundai I-30", metaVal = 8.0, oilTarget = 0;
 
         async function sync() {
             try {
@@ -174,21 +167,21 @@
                     activeCar = d.config.active_car || "Hyundai I-30";
                     metaVal = parseFloat(d.config.meta) || 8.0;
                     tank_cap = parseFloat(d.config.tank_capacity) || 53;
-                    document.getElementById('set-meta').value = metaVal;
-                    document.getElementById('set-tank').value = tank_cap;
                 }
 
                 const stations = [...new Set(allLogs.map(l => l[9]))].filter(s => s);
                 document.getElementById('postos-list').innerHTML = stations.map(s => `<option value="${s}">`).join('');
-
+                
                 const cars = d.vehicles.length > 0 ? d.vehicles : ["Hyundai I-30"];
                 document.getElementById('sel-car').innerHTML = cars.map(c => `<option value="${c}" ${c==activeCar?'selected':''}>${c}</option>`).join('');
-                document.getElementById('ui-car-display').innerText = activeCar;
 
                 const carLogs = allLogs.filter(l => l[2] === activeCar);
                 const last = carLogs[carLogs.length - 1] || [0,0,activeCar,0,0,0,0,0,0,'Posto',0,0,0,'Full'];
                 
+                oilTarget = parseFloat(last[4]) || 0; // Pegando da coluna E (antigo Km Viagem)
+                document.getElementById('v-oil-target').innerText = oilTarget;
                 document.getElementById('v-odo').value = last[3];
+                
                 recalcHome();
                 renderHistory(carLogs);
                 renderChart(carLogs);
@@ -199,46 +192,52 @@
         function recalcHome() {
             const carLogs = allLogs.filter(l => l[2] === activeCar);
             const last = carLogs[carLogs.length - 1] || [0,0,activeCar,0,0,0,0,0,0,'Posto',0,0,0,'Full'];
-            const odo = parseFloat(document.getElementById('v-odo').value) || 0;
-            const trip = odo - last[3];
-            const lastKmL = parseFloat(last[12]) || metaVal;
-            const consumed = trip / lastKmL;
+            const currentOdo = parseFloat(document.getElementById('v-odo').value) || 0;
+            const trip = currentOdo - last[3];
+            const kmL_ref = parseFloat(last[12]) || metaVal;
+            
+            const consumed = trip / kmL_ref;
             const remaining = tank_cap - consumed;
 
-            document.getElementById('v-cons').innerText = lastKmL.toFixed(2);
-            document.getElementById('v-cons').className = lastKmL < metaVal ? "text-3xl font-black italic text-danger" : "text-3xl font-black italic";
-
+            document.getElementById('v-cons').innerText = kmL_ref.toFixed(2);
+            document.getElementById('v-cons').className = kmL_ref < metaVal ? "text-3xl font-black italic text-danger" : "text-3xl font-black italic";
             document.getElementById('v-tank').innerText = Math.max(0, remaining).toFixed(1);
-            document.getElementById('v-dist').innerText = trip > 0 ? trip : 0;
             document.getElementById('v-spent').innerText = consumed > 0 ? consumed.toFixed(2) : 0;
 
-            document.getElementById('f-cons').style.strokeDashoffset = 188.5 - (188.5 * Math.min(lastKmL / (metaVal * 1.5), 1));
-            document.getElementById('f-tank').style.strokeDashoffset = 188.5 - (188.5 * Math.min(remaining / tank_cap, 1));
+            // Alerta de Óleo
+            if (oilTarget > 0 && (oilTarget - currentOdo <= 100)) {
+                document.getElementById('oil-alert').classList.remove('hidden');
+            } else {
+                document.getElementById('oil-alert').classList.add('hidden');
+            }
+
+            document.getElementById('f-cons').style.strokeDashoffset = 188.5 - (188.5 * Math.min(kmL_ref/(metaVal*1.5), 1));
+            document.getElementById('f-tank').style.strokeDashoffset = 188.5 - (188.5 * Math.min(remaining/tank_cap, 1));
         }
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function calcP() { const t=document.getElementById('i-tot').value, l=document.getElementById('i-lit').value; if(t&&l) document.getElementById('v-price').innerText="R$ "+(t/l).toFixed(2); }
 
-        async function saveNewCar() {
-            const payload = { active_car: document.getElementById('add-car').value || activeCar, meta: document.getElementById('set-meta').value, tank_capacity: document.getElementById('set-tank').value };
-            await fetch(URL, { method: 'POST', body: JSON.stringify({ type: 'config', payload: payload }) });
-            location.reload();
-        }
-
-        function switchVehicle() { activeCar = document.getElementById('sel-car').value; saveNewCar(); }
-
         async function saveData() {
-            const p = { carType: activeCar, odo: document.getElementById('i-odo').value, dist: document.getElementById('i-dist').value, liters: document.getElementById('i-lit').value, total: document.getElementById('i-tot').value, station: document.getElementById('i-st').value, tankLevel: document.getElementById('i-tank-lvl').value, date: document.getElementById('i-date').value };
+            const btn = document.getElementById('btn-save'); btn.innerText = "SINC...";
+            const p = { carType: activeCar, odo: document.getElementById('i-odo').value, dist: document.getElementById('i-oil').value, liters: document.getElementById('i-lit').value, total: document.getElementById('i-tot').value, station: document.getElementById('i-st').value, tankLevel: document.getElementById('i-tank-lvl').value, date: document.getElementById('i-date').value };
             await fetch(URL, { method: 'POST', body: JSON.stringify(p) });
             closeM(); sync();
         }
 
         function renderHistory(logs) {
+            const currentOdo = parseFloat(document.getElementById('v-odo').value) || 0;
             document.getElementById('hist-list').innerHTML = logs.slice().reverse().map(l => {
                 const kml = parseFloat(l[12]);
+                const oilLimit = parseFloat(l[4]);
+                const isOilNear = oilLimit > 0 && (oilLimit - currentOdo <= 100);
                 return `
                 <div class="glass-card p-5 flex justify-between border-none mb-3 bg-white/5">
-                    <div><p class="text-lg font-black uppercase italic">${l[9] || 'Posto'}</p><p class="text-xs opacity-50">${new Date(l[1]).toLocaleDateString()}</p></div>
+                    <div>
+                        <p class="text-lg font-black uppercase italic">${l[9] || 'Posto'}</p>
+                        <p class="text-xs opacity-50">${new Date(l[1]).toLocaleDateString()}</p>
+                        ${isOilNear ? '<p class="text-[9px] alert-pulse mt-1">⚠️ REVISÃO PRÓXIMA</p>' : ''}
+                    </div>
                     <div class="text-right">
                         <p class="text-lg font-bold ${kml<metaVal?'text-danger':'text-cyan-400'}">${kml.toFixed(2)} Km/L</p>
                         <p class="text-xs font-black opacity-30 uppercase">${l[3]} KM | ${l[8]} L</p>
