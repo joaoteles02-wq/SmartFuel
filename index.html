@@ -35,11 +35,7 @@
         .nav-btn { color: var(--text); opacity: 0.3; transition: 0.3s; }
         .active-nav { opacity: 1 !important; color: var(--neon) !important; }
         
-        /* Forçar Preto no Modo Dia */
-        body.light-mode .main-title, 
-        body.light-mode .nav-btn-plus, 
-        body.light-mode .btn-save-text,
-        body.light-mode label { color: #000 !important; }
+        body.light-mode .main-title, body.light-mode .nav-btn-plus, body.light-mode .btn-save-text, body.light-mode label { color: #000 !important; }
 
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 6000; padding: 20px; align-items: center; justify-content: center; overflow-y: auto; }
         body.light-mode #modal { background: rgba(255,255,255,0.98); }
@@ -53,14 +49,16 @@
 
         .text-danger { color: #ff3b30 !important; }
         .alert-oil { animation: pulseRed 1.5s infinite; color: #ff3b30; font-weight: 900; background: rgba(255, 59, 48, 0.15); padding: 4px 12px; border-radius: 10px; border: 1px solid #ff3b30; font-size: 11px; }
-        @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 1.0; } 100% { opacity: 1; } }
         label { font-size: 11px; font-weight: 900; color: #777; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        body.light-mode label { color: #000; }
     </style>
 </head>
 <body class="flex justify-center p-4">
 
     <div id="boot" class="fixed inset-0 bg-black z-[9000] flex flex-col items-center justify-center text-center">
         <div class="digital-glow text-2xl animate-pulse uppercase">Smart Fuel V21</div>
+        <p id="boot-msg" class="text-gray-600 mt-4 text-[10px] uppercase font-bold tracking-widest">Sincronizando Sistemas...</p>
     </div>
 
     <div class="w-full max-w-sm h-full flex flex-col pt-12">
@@ -75,7 +73,7 @@
             </div>
         </header>
 
-        <!-- DASHBOARD -->
+        <!-- DASHBOARD (HOME) -->
         <div id="home" class="tab-content active space-y-4">
             <div class="grid grid-cols-2 gap-4">
                 <div class="panel-sport p-4 text-center">
@@ -118,10 +116,7 @@
         </div>
 
         <div id="history" class="tab-content"><div id="hist-list" class="space-y-3 pb-20"></div></div>
-        <div id="charts" class="tab-content justify-center h-full text-center">
-            <p id="g-car-tag" class="text-[10px] font-bold text-cyan-500 mb-4 text-center uppercase main-title"></p>
-            <div class="panel-sport p-4 h-80 flex flex-col justify-center shadow-2xl"><canvas id="mainChart"></canvas></div>
-        </div>
+        <div id="charts" class="tab-content justify-center h-full"><div class="panel-sport p-4 h-80 flex flex-col justify-center shadow-2xl"><canvas id="mainChart"></canvas></div></div>
 
         <div id="settings" class="tab-content pt-2 space-y-4">
             <div class="panel-sport p-5 space-y-4">
@@ -131,7 +126,7 @@
                     <div><label>Tanque (L)</label><input type="number" id="set-tank" class="big-input" inputmode="decimal"></div>
                     <div><label>Meta Km/L</label><input type="number" id="set-meta" class="big-input" inputmode="decimal"></div>
                 </div>
-                <label>Adicionar Novo</label><input type="text" id="add-car" class="big-input" placeholder="Modelo">
+                <label>Adicionar Novo Veículo</label><input type="text" id="add-car" class="big-input" placeholder="Modelo">
                 <button onclick="saveNewCar()" class="w-full panel-sport p-4 rounded-2xl font-black uppercase text-cyan-500 main-title">Sincronizar</button>
             </div>
         </div>
@@ -145,7 +140,6 @@
         </nav>
     </div>
 
-    <!-- MODAL -->
     <div id="modal">
         <div class="panel-sport w-full p-6 space-y-4 max-h-[95vh] overflow-y-auto">
             <h3 class="text-2xl font-black uppercase italic text-cyan-400 text-center main-title">Novo Abastecimento</h3>
@@ -155,7 +149,7 @@
                 <div><label>Troca Óleo (Km)</label><input type="number" id="i-oil" class="big-input" inputmode="decimal"></div>
             </div>
             <div><label>Litros</label><input type="number" id="i-lit" step="0.01" class="big-input" inputmode="decimal" oninput="calcP()"></div>
-            <div><label>Posto</label><input type="text" id="i-st" list="postos-list" class="big-input" placeholder="Onde foi?"><datalist id="postos-list"></datalist></div>
+            <div><label>Posto</label><input type="text" id="i-st" list="postos-list" class="big-input" placeholder="Posto..."><datalist id="postos-list"></datalist></div>
             <div>
                 <label>Nível do Tanque</label>
                 <div class="flex">
@@ -180,18 +174,13 @@
             try {
                 const r = await fetch(URL); const d = await r.json(); allLogs = d.logs || d;
                 if(d.config) { activeCar = d.config.active_car || "Hyundai I-30"; metaVal = parseFloat(d.config.meta) || 8.0; tank_cap = parseFloat(d.config.tank_capacity) || 53; }
-                const stations = [...new Set(allLogs.map(l => l[9]))].filter(s => s);
-                document.getElementById('postos-list').innerHTML = stations.map(s => `<option value="${s}">`).join('');
-                const cars = d.vehicles && d.vehicles.length > 0 ? d.vehicles : ["Hyundai I-30"];
-                document.getElementById('sel-car').innerHTML = cars.map(c => `<option value="${c}" ${c==activeCar?'selected':''}>${c}</option>`).join('');
-                document.getElementById('ui-car-display').innerText = activeCar;
-                document.getElementById('g-car-tag').innerText = activeCar;
                 const carLogs = allLogs.filter(l => l[2] === activeCar);
                 const last = carLogs[carLogs.length - 1] || [0,0,activeCar,0,0,0,0,0,0,'Posto',0,0,0,'Full'];
                 lastOdoVal = parseFloat(last[3]); oilTarget = parseFloat(last[4]) || 0;
                 document.getElementById('v-odo').value = lastOdoVal;
+                document.getElementById('ui-car-display').innerText = activeCar;
                 recalcHome(); renderHistory(carLogs); renderChart(carLogs); document.getElementById('boot').style.display = 'none';
-            } catch (e) { document.getElementById('boot-msg').innerText = "Erro!"; }
+            } catch (e) { document.getElementById('boot-msg').innerText = "Erro!"; document.getElementById('boot').style.display = 'none'; }
         }
 
         function recalcHome() {
@@ -218,7 +207,7 @@
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function calcP() { const t=document.getElementById('i-tot').value, l=document.getElementById('i-lit').value; if(t&&l) document.getElementById('v-price').innerText="R$ "+(t/l).toFixed(2); }
         async function saveData() { const p = { carType: activeCar, odo: document.getElementById('i-odo').value, dist: document.getElementById('i-oil').value, liters: document.getElementById('i-lit').value, total: document.getElementById('i-tot').value, station: document.getElementById('i-st').value, tankLevel: document.getElementById('btn-full').classList.contains('btn-active') ? 'Full Tank - refresh' : 'Parcial', date: document.getElementById('i-date').value }; await fetch(URL, { method: 'POST', body: JSON.stringify(p) }); closeM(); sync(); }
-        function renderHistory(logs) { document.getElementById('hist-list').innerHTML = logs.slice().reverse().map(l => `<div class="panel-sport p-5 flex justify-between items-center mb-3 border-none bg-zinc-900/20"><div><p class="text-lg font-black uppercase italic main-title">${l[9] || 'Posto'}</p><p class="text-xs opacity-50 main-title">${new Date(l[1]).toLocaleDateString()}</p></div><div class="text-right"><p class="text-lg font-bold ${parseFloat(l[12])<metaVal?'text-danger':'text-cyan-400'}">${parseFloat(l[12]).toFixed(2)} Km/L</p><p class="text-xs font-black opacity-30 uppercase main-title">${l[3]} KM | ${l[8]} L</p></div></div>`).join(''); }
+        function renderHistory(logs) { document.getElementById('hist-list').innerHTML = logs.slice().reverse().map(l => `<div class="panel-sport p-5 flex justify-between items-center mb-3 border-none bg-zinc-900/10"><div><p class="text-lg font-black uppercase italic main-title">${l[9] || 'Posto'}</p><p class="text-xs opacity-50 main-title">${new Date(l[1]).toLocaleDateString()}</p></div><div class="text-right"><p class="text-lg font-bold ${parseFloat(l[12])<metaVal?'text-danger':'text-cyan-400'}">${parseFloat(l[12]).toFixed(2)} Km/L</p><p class="text-xs font-black opacity-30 uppercase main-title">${l[3]} KM | ${l[8]} L</p></div></div>`).join(''); }
         function renderChart(logs) { const ctx = document.getElementById('mainChart').getContext('2d'); if(chart) chart.destroy(); const data = logs.slice(-8); chart = new Chart(ctx, { type: 'line', data: { labels: data.map(l => l[1].split('T')[0].substring(5)), datasets: [{ data: data.map(l => l[12]), borderColor: '#00f2ff', fill: true, tension: 0.4, backgroundColor: 'rgba(0, 242, 255, 0.1)' }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#888', font: { size: 14 } }, grid: { color: 'rgba(128,128,128,0.1)' } }, x: { ticks: { color: '#888' } } } } }); }
         function tab(id, btn) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav')); btn.classList.add('active-nav'); }
         function openM() { document.getElementById('modal').style.display = 'flex'; document.getElementById('i-date').valueAsDate = new Date(); }
