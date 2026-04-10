@@ -32,13 +32,12 @@
             width: 90%; height: 72px; background: var(--nav-bg); backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 24px; display: flex; justify-content: space-around; align-items: center; z-index: 5000;
         }
-        .nav-btn { color: var(--text); opacity: 0.3; transition: 0.3s; font-size: 10px; font-weight: bold; text-align: center; }
+        .nav-btn { color: var(--text); opacity: 0.3; transition: 0.3s; font-size: 10px; font-weight: bold; }
         .active-nav { opacity: 1 !important; color: var(--neon) !important; }
         
         .alert-oil { animation: pulseRed 1.5s infinite; color: #ff3b30; font-weight: 900; background: rgba(255, 59, 48, 0.15); padding: 4px 12px; border-radius: 10px; border: 1px solid #ff3b30; font-size: 11px; }
         @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 1.0; } 100% { opacity: 1; } }
-        label { font-size: 11px; font-weight: 900; color: #777; text-transform: uppercase; margin-bottom: 4px; display: block; }
-
+        
         .big-input { background: rgba(128,128,128,0.1); border: 2px solid rgba(128,128,128,0.2); border-radius: 15px; padding: 15px; color: var(--text); font-size: 20px; width: 100%; outline: none; }
         .odo-input { background: transparent; border: none; color: var(--neon); font-family: 'Digital Numbers', sans-serif; font-size: 46px; text-align: center; width: 100%; outline: none; }
         
@@ -62,8 +61,8 @@
                 <button onclick="toggleTheme()" class="panel-sport px-5 py-2 text-[12px] font-black rounded-full">🌓 MODO</button>
             </div>
             <div class="flex items-center justify-between">
-                <span id="ui-car-display" class="text-sm font-black text-cyan-500 uppercase tracking-widest">---</span>
-                <div id="oil-alert" class="hidden alert-oil uppercase italic">⚠️ óleo</div>
+                <span id="ui-car-display" class="text-sm font-black text-cyan-500 uppercase tracking-widest">AGUARDANDO...</span>
+                <div id="oil-alert" class="hidden alert-oil uppercase italic">⚠️ ÓLEO</div>
             </div>
         </header>
 
@@ -122,57 +121,51 @@
         </nav>
     </div>
 
-    <!-- MODAL -->
-    <div id="modal">
-        <div class="panel-sport w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-xl font-black uppercase text-cyan-400 text-center">Novo Abastecimento</h3>
-            <div><label>Odômetro</label><input type="number" id="i-odo" class="big-input"></div>
-            <div><label>Litros</label><input type="number" id="i-lit" step="0.01" class="big-input"></div>
-            <div>
-                <label>Nível</label>
-                <div class="flex">
-                    <button id="btn-full" onclick="setTank('Full Tank - refresh')" class="segmented-btn btn-active">Cheio</button>
-                    <button id="btn-partial" onclick="setTank('Parcial')" class="segmented-btn">Parcial</button>
-                </div>
-            </div>
-            <div class="flex gap-4 pt-4">
-                <button onclick="closeM()" class="flex-1 font-bold opacity-50">CANCELAR</button>
-                <button onclick="saveData()" class="flex-1 panel-sport p-4 font-black uppercase text-cyan-500">SALVAR</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         const URL = "https://script.google.com/macros/s/AKfycbxPAcB9qDT4LDG7bMo-RyJpIZIJkJ4x6ZO4zlRCljI1YPzYwLooRNfLSRjma3vkXxZ8/exec";
-        let tank_cap = 53, allLogs = [], activeCar = "Hyundai I-30", metaVal = 8.0, oilTarget = 0;
-        let lastOdoVal = 0, lastLitros = 0, lastTankType = "Full", kmLAnterior = 8.0;
+        let tank_cap = 53, allLogs = [], activeCar = "Hyundai I-30", metaVal = 8.0;
+        let lastOdoVal = 0, lastLitros = 0, lastTankType = "Full", kmLAnterior = 8.0, oilTarget = 0;
 
         async function sync() {
+            // Segurança: Se demorar mais de 5s, libera a tela
+            const timeout = setTimeout(() => { document.getElementById('boot').style.display = 'none'; }, 5000);
+
             try {
-                const r = await fetch(URL); const d = await r.json(); allLogs = d.logs || d;
-                if(d.config) { activeCar = d.config.active_car; metaVal = parseFloat(d.config.meta); tank_cap = parseFloat(d.config.tank_capacity); }
+                const r = await fetch(URL);
+                const d = await r.json();
+                allLogs = d.logs || d;
                 
+                if(d.config) {
+                    activeCar = d.config.active_car || activeCar;
+                    tank_cap = parseFloat(d.config.tank_capacity) || 53;
+                }
+
                 const carLogs = allLogs.filter(l => l[2] === activeCar);
                 const last = carLogs[carLogs.length - 1];
                 const prev = carLogs[carLogs.length - 2] || last;
 
                 if(last) {
-                    lastOdoVal = parseFloat(last[3]);      // Hodômetro último abastecimento
-                    lastLitros = parseFloat(last[8]);      // Litros abastecidos no último
-                    lastTankType = last[13] || "Full";     // Tipo: Full ou Parcial
-                    kmLAnterior = parseFloat(prev[12]) || 8.0; // Km/L do registro anterior
-                    oilTarget = parseFloat(last[4]);
+                    lastOdoVal = parseFloat(last[3]) || 0;
+                    lastLitros = parseFloat(last[8]) || 0;
+                    lastTankType = last[13] || "Full";
+                    kmLAnterior = parseFloat(prev[12]) || 8.0;
+                    oilTarget = parseFloat(last[4]) || 0;
 
                     document.getElementById('v-odo').value = lastOdoVal;
                     document.getElementById('ui-car-display').innerText = activeCar;
                     recalcHome();
                 }
+            } catch (e) {
+                console.error("Erro na Sincronização:", e);
+                document.getElementById('boot-msg').innerText = "Modo Offline";
+            } finally {
+                clearTimeout(timeout);
                 document.getElementById('boot').style.display = 'none';
-            } catch (e) { console.error(e); }
+            }
         }
 
         function recalcHome() {
-            // APLICAÇÃO DAS SUAS 4 FÓRMULAS
+            // --- SUAS 4 FÓRMULAS EXATAS ---
             const odoAtual = parseFloat(document.getElementById('v-odo').value) || lastOdoVal;
 
             // 1. "Km percorrido" = "hodômetro atual" - "hodômetro do ultimo abastecimento"
@@ -194,29 +187,28 @@
             // 4. "Tanque (L)" = "capacidade tanque (L)" - "Combustível consumido"
             const tanqueRestante = tank_cap - combustivelConsumido;
 
-            // ATUALIZAÇÃO DA TELA
+            // --- ATUALIZAÇÃO DA TELA ---
             document.getElementById('v-dist').innerText = kmPercorrido.toFixed(0);
             document.getElementById('v-cons').innerText = kmL_Atual > 0 ? kmL_Atual.toFixed(2) : "--";
             document.getElementById('v-spent').innerText = combustivelConsumido.toFixed(2);
             document.getElementById('v-tank').innerText = Math.max(0, tanqueRestante).toFixed(1);
 
-            // GAUGES
+            // --- GAUGES (Ponteiros Visuais) ---
             document.getElementById('f-spent').style.strokeDashoffset = 188.5 - (188.5 * Math.min(combustivelConsumido / tank_cap, 1));
             document.getElementById('f-tank').style.strokeDashoffset = 188.5 - (188.5 * Math.min(tanqueRestante / tank_cap, 1));
             document.getElementById('f-cons').style.strokeDashoffset = 188.5 - (188.5 * Math.min(kmL_Atual / 20, 1));
 
+            // Alerta Óleo
             if (oilTarget > 0 && odoAtual >= (oilTarget - 100)) document.getElementById('oil-alert').classList.remove('hidden');
+            else document.getElementById('oil-alert').classList.add('hidden');
         }
 
-        function setTank(v) { 
-            lastTankType = v;
-            document.getElementById('btn-full').classList.toggle('btn-active', v.includes('Full'));
-            document.getElementById('btn-partial').classList.toggle('btn-active', !v.includes('Full'));
-        }
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
         function tab(id, btn) { 
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); 
             document.getElementById(id).classList.add('active'); 
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active-nav'));
+            if(btn.classList) btn.classList.add('active-nav');
         }
         function openM() { document.getElementById('modal').style.display = 'flex'; }
         function closeM() { document.getElementById('modal').style.display = 'none'; }
