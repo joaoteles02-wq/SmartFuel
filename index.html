@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Smart Fuel Master V16</title>
+    <title>Smart Fuel Sport V17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -14,7 +14,6 @@
         body.light-mode { --bg: #f1f5f9; --text: #000000; --neon: #0284c7; --nav-bg: rgba(255, 255, 255, 0.4); }
 
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; margin: 0; transition: 0.4s; }
-        
         .panel-sport { background: linear-gradient(145deg, #1a1a1a, #000); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 30px; }
         body.light-mode .panel-sport { background: linear-gradient(145deg, #ffffff, #cbd5e1); border-color: #94a3b8; }
 
@@ -25,43 +24,45 @@
         body.light-mode .digital-glow { text-shadow: none; color: #000; }
 
         .gauge-fill { fill: none; stroke-width: 14; stroke-linecap: round; stroke-dasharray: 188.5; stroke-dashoffset: 188.5; transition: 0.5s ease-out; }
-        .tab-content { display: none; height: calc(100vh - 220px); overflow-y: auto; padding: 10px; }
+        .tab-content { display: none; height: calc(100vh - 200px); overflow-y: auto; padding: 10px; }
         .active { display: flex; flex-direction: column; }
 
         .nav-glass {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-            width: 90%; height: 72px; background: var(--nav-bg); backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 24px;
-            display: flex; justify-content: space-around; align-items: center; z-index: 5000;
+            width: 90%; height: 72px; background: var(--nav-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 24px; display: flex; justify-content: space-around; align-items: center; z-index: 5000;
         }
         .nav-btn { color: var(--text); opacity: 0.3; transition: 0.3s; }
         .active-nav { opacity: 1 !important; color: var(--neon) !important; }
         
-        /* Botão + e Salvar no Modo Dia */
-        body.light-mode .btn-action-main { color: #000 !important; border-color: #000 !important; }
-        body.light-mode .active-nav { color: var(--neon) !important; }
+        /* Botões Pretos no Modo Dia */
+        body.light-mode .btn-sport-action { color: #000 !important; border-color: #000 !important; font-weight: 900; }
+        body.light-mode .nav-btn-plus { color: #000 !important; border-color: #000 !important; }
 
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 6000; padding: 20px; align-items: center; justify-content: center; overflow-y: auto; }
         body.light-mode #modal { background: rgba(255,255,255,0.98); }
 
         .big-input { background: rgba(128,128,128,0.1); border: 2px solid rgba(128,128,128,0.2); border-radius: 15px; padding: 15px; color: var(--text); font-size: 20px; width: 100%; outline: none; font-weight: bold; }
-        .odo-input { background: transparent; border: none; color: var(--neon); font-family: 'Digital Numbers', sans-serif; font-size: 48px; text-align: center; width: 100%; outline: none; }
+        .odo-input { background: transparent; border: none; color: var(--neon); font-family: 'Digital Numbers', sans-serif; font-size: 44px; text-align: center; width: 100%; outline: none; }
         
         .segmented-btn { flex: 1; padding: 12px; font-weight: 900; text-transform: uppercase; border: 2px solid #333; transition: 0.3s; font-size: 14px; background: rgba(255,255,255,0.05); color: var(--text); }
         body.light-mode .segmented-btn { border-color: #94a3b8; color: #000; }
         .btn-active { background: var(--neon) !important; color: #000 !important; border-color: var(--neon) !important; }
 
-        .alert-oil { animation: pulseRed 1.5s infinite; color: #ff3b30; font-weight: 900; background: rgba(255, 59, 48, 0.15); padding: 4px 12px; border-radius: 10px; border: 1px solid #ff3b30; font-size: 12px; }
+        .text-danger { color: #ff3b30 !important; }
+        .alert-oil { animation: pulseRed 1.5s infinite; color: #ff3b30; font-weight: 900; background: rgba(255, 59, 48, 0.15); padding: 2px 10px; border-radius: 10px; border: 1px solid #ff3b30; font-size: 10px; }
         @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        label { font-size: 12px; font-weight: 900; color: #777; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        label { font-size: 11px; font-weight: 900; color: #777; text-transform: uppercase; margin-bottom: 4px; display: block; }
         body.light-mode label { color: #000; }
         body.light-mode .main-title { color: #000 !important; }
     </style>
 </head>
 <body class="flex justify-center p-4">
 
+    <!-- Fail-safe Boot Screen -->
     <div id="boot" class="fixed inset-0 bg-black z-[9000] flex flex-col items-center justify-center text-center">
-        <div class="digital-glow text-2xl animate-pulse uppercase">Smart Fuel V16</div>
+        <div class="digital-glow text-2xl animate-pulse uppercase">Smart Fuel V17</div>
+        <p id="boot-msg" class="text-gray-600 mt-4 font-bold uppercase text-[10px]">Iniciando Telemetria...</p>
     </div>
 
     <div class="w-full max-w-sm h-full flex flex-col pt-12">
@@ -69,7 +70,7 @@
         <header class="mb-4 px-2">
             <div class="flex justify-between items-center mb-2">
                 <h1 class="text-3xl font-black italic tracking-tighter uppercase main-title">Smart Fuel</h1>
-                <button onclick="toggleTheme()" class="panel-sport px-5 py-2 text-[12px] font-black uppercase rounded-full main-title">🌓 MODO</button>
+                <button onclick="toggleTheme()" class="panel-sport btn-sport-action px-5 py-2 text-[12px] font-black uppercase rounded-full main-title">🌓 MODO</button>
             </div>
             <div class="flex items-center justify-between">
                 <span id="ui-car-display" class="text-sm font-black text-cyan-500 uppercase tracking-widest">---</span>
@@ -77,9 +78,8 @@
             </div>
         </header>
 
-        <!-- DASHBOARD (HOME) -->
+        <!-- DASHBOARD -->
         <div id="home" class="tab-content active space-y-4">
-            <!-- GASTO E TANQUE -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="panel-sport p-4 text-center">
                     <p class="text-[10px] font-black uppercase mb-3 opacity-60 text-cyan-500">Gasto (L)</p>
@@ -90,7 +90,7 @@
                     <div class="mt-[-40px]"><span id="v-spent" class="text-2xl font-black italic main-title">--</span></div>
                 </div>
                 <div class="panel-sport p-4 text-center">
-                    <p class="text-[10px] font-black uppercase mb-3 opacity-60 text-cyan-500">Tanque (L)</p>
+                    <p class="text-[10px] font-black uppercase mb-3 opacity-60 text-cyan-400">Tanque (L)</p>
                     <svg class="w-full h-20" viewBox="0 0 140 80">
                         <path fill="none" stroke="rgba(128,128,128,0.2)" stroke-width="12" d="M 20 70 A 50 50 0 1 1 120 70" />
                         <path id="f-tank" class="gauge-fill stroke-cyan-500" d="M 20 70 A 50 50 0 1 1 120 70" />
@@ -99,13 +99,11 @@
                 </div>
             </div>
 
-            <!-- ODÔMETRO INTERATIVO (O CORAÇÃO DA HOME) -->
             <div class="panel-sport p-4 text-center">
-                <p class="text-[11px] font-black opacity-40 uppercase mb-1 main-title">Quilometragem Total (Input)</p>
+                <p class="text-[11px] font-black opacity-40 uppercase mb-1 main-title">Quilometragem Total</p>
                 <div class="lcd-display py-1"><input type="number" id="v-odo" class="odo-input" inputmode="decimal" oninput="recalcHome()"></div>
             </div>
 
-            <!-- KM PERCORRIDO E CONSUMO -->
             <div class="grid grid-cols-2 gap-4">
                 <div class="panel-sport p-4 text-center flex flex-col justify-center">
                     <p class="text-[10px] font-black uppercase mb-1 opacity-60 text-cyan-500">Km Percorrido</p>
@@ -117,44 +115,32 @@
                         <path fill="none" stroke="rgba(128,128,128,0.2)" stroke-width="10" d="M 20 70 A 50 50 0 1 1 120 70" />
                         <path id="f-cons" class="gauge-fill stroke-cyan-500" d="M 20 70 A 50 50 0 1 1 120 70" />
                     </svg>
-                    <div class="mt-[-35px]"><span id="v-cons" class="text-2xl font-black italic main-title">--</span></div>
+                    <div id="v-cons-wrap" class="mt-[-35px]"><span id="v-cons" class="text-2xl font-black italic main-title">--</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- HISTÓRICO -->
-        <div id="history" class="tab-content">
-            <p id="h-car-tag" class="text-[12px] font-black text-cyan-500 mb-4 uppercase main-title"></p>
-            <div id="hist-list" class="space-y-3 pb-20"></div>
-        </div>
-
-        <!-- GRÁFICO -->
-        <div id="charts" class="tab-content justify-center">
-            <div class="panel-sport p-4 h-80 flex flex-col justify-center shadow-2xl">
-                <p id="g-car-tag" class="text-[10px] font-black text-cyan-500 mb-4 text-center uppercase main-title"></p>
-                <canvas id="mainChart"></canvas>
-            </div>
-        </div>
+        <div id="history" class="tab-content"><div id="hist-list" class="space-y-3 pb-20"></div></div>
+        <div id="charts" class="tab-content justify-center h-full"><div class="panel-sport p-4 h-80 flex flex-col justify-center"><canvas id="mainChart"></canvas></div></div>
 
         <!-- CONFIG -->
         <div id="settings" class="tab-content pt-2 space-y-4">
             <div class="panel-sport p-5 space-y-4">
                 <h3 class="text-md font-black uppercase text-cyan-500 border-b border-white/5 pb-2">Veículos</h3>
-                <label>Selecionar Carro</label><select id="sel-car" class="big-input" onchange="switchVehicle()"></select>
+                <label>Carro Ativo</label><select id="sel-car" class="big-input" onchange="switchVehicle()"></select>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label>Tanque (L)</label><input type="number" id="set-tank" class="big-input" inputmode="decimal"></div>
                     <div><label>Meta Km/L</label><input type="number" id="set-meta" class="big-input" inputmode="decimal"></div>
                 </div>
                 <label>Novo Veículo</label><input type="text" id="add-car" class="big-input" placeholder="Modelo">
-                <button onclick="saveNewCar()" class="w-full panel-sport p-4 rounded-2xl font-black uppercase text-cyan-500 main-title">Sincronizar</button>
+                <button onclick="saveNewCar()" class="w-full panel-sport btn-sport-action p-4 rounded-2xl font-black uppercase text-cyan-500 main-title">Sincronizar</button>
             </div>
         </div>
 
-        <!-- NAVEGAÇÃO -->
         <nav class="nav-glass">
             <button onclick="tab('home', this)" class="nav-btn active-nav"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg></button>
             <button onclick="tab('history', this)" class="nav-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg></button>
-            <div onclick="openM()" class="bg-cyan-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg -translate-y-6 border-4 border-black btn-action-main">+</div>
+            <div onclick="openM()" class="bg-cyan-500 w-14 h-14 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg -translate-y-6 border-4 border-black nav-btn-plus">+</div>
             <button onclick="tab('charts', this)" class="nav-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg></button>
             <button onclick="tab('settings', this)" class="nav-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></button>
         </nav>
@@ -163,10 +149,7 @@
     <!-- MODAL -->
     <div id="modal">
         <div class="panel-sport w-full p-6 space-y-4 max-h-[95vh] overflow-y-auto">
-            <div class="text-center mb-2">
-                <p id="m-car-tag" class="text-[11px] font-black text-cyan-500 uppercase main-title"></p>
-                <h3 class="text-2xl font-black uppercase italic main-title">Novo Abastecimento</h3>
-            </div>
+            <h3 class="text-2xl font-black uppercase italic text-cyan-400 text-center main-title">Novo Registro</h3>
             <div><label>Data</label><input type="date" id="i-date" class="big-input"></div>
             <div class="grid grid-cols-2 gap-4">
                 <div><label>Odômetro</label><input type="number" id="i-odo" class="big-input" inputmode="decimal"></div>
@@ -175,17 +158,17 @@
             <div><label>Litros</label><input type="number" id="i-lit" step="0.01" class="big-input" inputmode="decimal" oninput="calcP()"></div>
             <div><label>Posto</label><input type="text" id="i-st" list="postos-list" class="big-input" placeholder="Posto..."><datalist id="postos-list"></datalist></div>
             <div>
-                <label>Nível do Tanque</label>
+                <label>Tanque</label>
                 <div class="flex">
-                    <button id="btn-full" onclick="setTank('Full Tank - refresh')" class="segmented-btn btn-left">Cheio</button>
-                    <button id="btn-partial" onclick="setTank('Parcial')" class="segmented-btn btn-right">Parcial</button>
+                    <button id="btn-full" onclick="setTank('Full Tank - refresh')" class="segmented-btn btn-left main-title">Cheio</button>
+                    <button id="btn-partial" onclick="setTank('Parcial')" class="segmented-btn btn-right main-title">Parcial</button>
                 </div>
             </div>
             <div><label>Total R$</label><input type="number" id="i-tot" step="0.01" class="big-input" disabled oninput="calcP()" inputmode="decimal"></div>
-            <div class="lcd-display p-4 text-center bg-cyan-400"><label class="text-black font-black">Preço Unitário</label><div id="v-price" class="text-3xl font-black text-black">R$ 0,00</div></div>
+            <div class="lcd-display p-4 text-center bg-cyan-400"><label class="text-black font-black uppercase">Preço Unitário</label><div id="v-price" class="text-3xl font-black text-black">R$ 0,00</div></div>
             <div class="flex gap-4 pt-4 pb-4">
                 <button onclick="closeM()" class="flex-1 font-black opacity-60 uppercase text-lg main-title">Sair</button>
-                <button onclick="saveData()" id="btn-save" class="flex-1 panel-sport p-4 rounded-2xl font-black uppercase text-xl btn-action-main">Salvar</button>
+                <button onclick="saveData()" id="btn-save" class="flex-1 panel-sport btn-sport-action p-4 rounded-2xl font-black uppercase text-xl main-title">Salvar</button>
             </div>
         </div>
     </div>
@@ -194,27 +177,31 @@
         const URL = "https://script.google.com/macros/s/AKfycbx4gPoYfO0y3vUW47XseKMifOR9QTDQVMziYa-RB0TKWxiGI8WuaAmeh36JG8_eViJMJA/exec";
         let tank_cap = 53, chart, allLogs = [], activeCar = "Hyundai I-30", metaVal = 8.0, oilTarget = 0, currentTankLvl = "";
 
+        // Fail-safe: fecha boot em 3.5s se a rede travar
+        const bootTimer = setTimeout(() => { document.getElementById('boot').style.display='none'; }, 3500);
+
         async function sync() {
             try {
                 const r = await fetch(URL);
                 const d = await r.json();
-                allLogs = d.logs;
+                clearTimeout(bootTimer);
+                allLogs = d.logs || d;
+                
                 if(d.config) {
-                    activeCar = d.config.active_car || "Hyundai I-30";
-                    metaVal = parseFloat(d.config.meta) || 8.0;
-                    tank_cap = parseFloat(d.config.tank_capacity) || 53;
+                    activeCar = d.config.active_car || activeCar;
+                    metaVal = parseFloat(d.config.meta) || metaVal;
+                    tank_cap = parseFloat(d.config.tank_capacity) || tank_cap;
                     document.getElementById('set-meta').value = metaVal;
                     document.getElementById('set-tank').value = tank_cap;
                 }
+
                 const stations = [...new Set(allLogs.map(l => l[9]))].filter(s => s);
                 document.getElementById('postos-list').innerHTML = stations.map(s => `<option value="${s}">`).join('');
-                const cars = d.vehicles.length > 0 ? d.vehicles : ["Hyundai I-30"];
+                const cars = d.vehicles && d.vehicles.length > 0 ? d.vehicles : ["Hyundai I-30"];
                 document.getElementById('sel-car').innerHTML = cars.map(c => `<option value="${c}" ${c==activeCar?'selected':''}>${c}</option>`).join('');
                 
                 document.getElementById('ui-car-display').innerText = activeCar;
-                document.getElementById('h-car-tag').innerText = "Veículo: " + activeCar;
-                document.getElementById('m-car-tag').innerText = activeCar;
-
+                
                 const carLogs = allLogs.filter(l => l[2] === activeCar);
                 const last = carLogs[carLogs.length - 1] || [0,0,activeCar,0,0,0,0,0,0,'Posto',0,0,0,'Full'];
                 oilTarget = parseFloat(last[4]) || 0;
@@ -224,7 +211,7 @@
                 renderHistory(carLogs);
                 renderChart(carLogs);
                 document.getElementById('boot').style.display = 'none';
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error(e); document.getElementById('boot-msg').innerText = "Erro na Planilha!"; }
         }
 
         function recalcHome() {
@@ -233,12 +220,11 @@
             const odoInput = parseFloat(document.getElementById('v-odo').value) || 0;
             const trip = odoInput - last[3];
             const kmL = parseFloat(last[12]) || metaVal;
-            
             const consumed = trip / kmL;
             const remaining = tank_cap - consumed;
 
             document.getElementById('v-cons').innerText = kmL.toFixed(2);
-            document.getElementById('v-cons-wrap').className = kmL < metaVal ? "mt-[-40px] text-danger" : "mt-[-40px]";
+            document.getElementById('v-cons-wrap').className = kmL < metaVal ? "mt-[-35px] text-danger" : "mt-[-35px]";
             document.getElementById('v-tank').innerText = Math.max(0, remaining).toFixed(1);
             document.getElementById('v-spent').innerText = Math.max(0, consumed).toFixed(2);
             document.getElementById('v-dist').innerText = Math.max(0, trip);
